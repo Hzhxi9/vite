@@ -1,17 +1,23 @@
 <script setup lang="ts">
-import style from './assets/css/message.module.css';
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
+import style from './assets/css/message.module.scss';
 import HelloWorld from './components/HelloWorld.vue';
 
 // use css modules
 import { computed } from '@vue/reactivity';
+import { onMounted } from 'vue';
+
+import logo from './assets/logo.png';
 
 const $style = computed(() => style);
+
+onMounted(() => {
+  const imgEle = document.querySelector('img');
+  imgEle!.src = logo
+});
 </script>
 
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
+  <img alt="Vue logo"/>
   <p :class="$style.message">hello</p>
   <!-- <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" /> -->
 </template>
