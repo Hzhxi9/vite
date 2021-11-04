@@ -219,3 +219,76 @@ import './style.scss';
 ```
 
 - 通过在文件扩展名前加上 .module 来结合使用 CSS modules 和预处理器，例如 style.module.scss
+
+5. PostCSS
+
+vite 自动对`*.vue`文件和导入`.css`文件应用 PostCSS 配置, 我们只需要安装必要的插件合添加[`postcss.config.js`](https://github.com/postcss/postcss-load-config)文件即可
+
+```js
+module.exports = {
+  plugins: [require('autoprefixer')],
+};
+```
+
+```shell
+npm i postcss autoprefixer@8.1.4
+```
+
+6. 资源 URL 处理
+
+相关文档: [公共基础路径](https://vitejs.cn/guide/build.html)、[assetsInclude](https://vitejs.cn/config/#assetsinclude)
+
+- 引用静态资源
+
+可以在`*.vue`文件的 template、style 和 css 文件中以相对和绝对路径引用静态资源
+
+```html
+<!-- 相对路径 -->
+<img src="./assets/logo.png" />
+<!-- 绝对路径 -->
+<img src="/src/assets/logo.png" />
+<!-- style标签 -->
+<style scoped>
+  #app {
+    background-image: url('./assets/logo.png');
+  }
+</style>
+```
+
+- public 目录
+
+public 目录下可以存放围在源码中引用的资源, 他们就会被留下且文件名不会被哈希处理
+
+这些文件会被原封不动拷贝到发布目录的根目录下
+
+```html
+<img src="/logo.png" />
+```
+
+> 注意引用位置在 public 下的文件需要使用绝对路径, 例如 public/icon.png 应该使用/icon.png
+> public 中的资源不应该被 JavaScript 文件引用。
+
+- URL 导入
+
+导入一个静态资源会返回解析后的 URL
+
+```js
+import imgUrl from './img.png';
+document.getElementById('img').src = imgUrl;
+```
+
+添加一些特殊的查询参数可以更资源被引入的方式
+
+```js
+// 显式加载资源为URL
+import assetAsURL from './asst.js?url';
+
+// 以字符串形式加载资源
+import assetAsString from './shader.glsl?raw';
+
+// 加载为Web Worker
+import Worker from './worker.js?worker';
+
+// 在构建时 Web Worker 内联为 base64 字符串
+import InlineWorker from './worker.js?worker&inline';
+```
