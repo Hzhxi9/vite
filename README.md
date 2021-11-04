@@ -120,7 +120,7 @@ import './index.css';
 </style>
 ```
 
-3. CSS Module: SFC 中使用 CSS Module 
+3. CSS Module: SFC 中使用 CSS Module
 
 任何以 .module.css 为后缀名的 CSS 文件都被认为是一个 CSS modules 文件。导入这样的文件会返回一个相应的模块对象
 
@@ -190,3 +190,32 @@ export default {
   },
 };
 ```
+
+4. css 预处理器
+
+- 安装对应的预处理器就可以直接在 vite 项目中使用
+
+```shell
+# .scss and .sass
+npm install -D sass
+
+# .less
+npm install -D less
+
+# .styl and .stylus
+npm install -D stylus
+```
+
+```html
+<style lang="scss">
+  /*use scss */
+</style>
+```
+
+- 在 js 中导入
+
+```js
+import './style.scss';
+```
+
+- 通过在文件扩展名前加上 .module 来结合使用 CSS modules 和预处理器，例如 style.module.scss
