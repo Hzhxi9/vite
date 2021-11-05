@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import style from './assets/css/message.module.scss';
-import HelloWorld from './components/HelloWorld.vue';
+import HelloWorld from '@components/HelloWorld.vue';
+
+import { func } from './utils';
+
+func()
 
 // use css modules
 import { computed } from '@vue/reactivity';
 import { onMounted } from 'vue';
 
-import logo from './assets/logo.png';
+import logo from '@/assets/logo.png';
 
 const $style = computed(() => style);
 
@@ -19,7 +23,7 @@ onMounted(() => {
 <template>
   <img alt="Vue logo"/>
   <p :class="$style.message">hello</p>
-  <!-- <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" /> -->
+  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
 </template>
 
 <style>
