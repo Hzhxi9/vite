@@ -292,3 +292,74 @@ import Worker from './worker.js?worker';
 // 在构建时 Web Worker 内联为 base64 字符串
 import InlineWorker from './worker.js?worker&inline';
 ```
+
+七、 缓存
+
+1. 文件系统缓存
+
+vite 会将预构建的依赖缓存到`node_modules/.vite`。它会根据几个源来决定是否需要重新运行预构建步骤:
+
+- package.json 中的 dependencies 列表
+- 包管理器的 lockfile, 例如 package-lock.json、 yarn.lock、pnpm.lock.yaml
+- 可能在 vite.config.js 相关字段中配置过
+
+只有当上面一个步骤发生变时, 才需要重新运行优构建步骤
+
+如果出于某些原因, 想要强制 vite 重新绑定依赖, 可以使用
+
+- `--force`命令行选项启动开发服务器
+- 手动删除`node_modules/.vite`目录
+
+2. 浏览器缓存
+
+Vite 通过 HTTP 头来缓存请求得到的依赖。
+
+解析后的依赖请求会以 HTTP 头`max-age=31536000,immutable`强缓存, 以提高在开发时的页面重载性能。一旦被缓存, 这些请求将永远不会再到达开发服务器。
+
+如果安装了不同的版本(这反映在包管理器的 lockfile 中), 则附加的版本 query 会自动使他们失效。
+
+如果你想通过本地编辑来调试依赖项目可以通过
+
+- 浏览器 devtools 的 network 选项卡暂时禁用缓存
+- 重启 vite dev server, 使用--force 标志重新打包依赖
+- 重新载入页面
+
+八、 NPM 依赖项解析和预构建
+
+1. 原生 ES 引入不支持下面这种裸模块导入
+
+```js
+import { method } from 'dep';
+```
+
+上面的操作将在浏览器中抛出一个错误。Vite 将在服务的所有源文件中检测此类裸模块导入，并执行以下操作:
+
+- 预构建他们以提升页面重载速度, 并将 CommonJS/UMD 转换为 ESM 格式。预构建这一步由 esbuild 执行，这使得 Vite 的冷启动时间比任何基于 javascript 的打包程序都要快得多。
+
+- 重写导入为合法的 URL，例如 /node_modules/.vite/my-dep.js?v=f3sf2ebd 以便浏览器能够正确导入它们。
+
+2. 依赖预构建的原因
+
+- CommonJS 和 UMD 兼容性
+
+  开发阶段中，Vite 的开发服务器将所有代码视为原生 ES 模块。因此，Vite 必须先将作为 CommonJS 或 UMD 发布的依赖项转换为 ESM。
+
+  当转换 CommonJS 依赖时，Vite 会执行智能导入分析，这样即使导出是动态分配的（如 React），按名导入也会符合预期效果
+
+- 性能
+
+  vite 将有许多内部模块的 ESM 依赖关系转换为单个模块, 以提高后续页面加载性能
+
+  一些包将它们的 ES 模块构建作为许多单独的文件相互导入。 例如，lodash-es 有超过 600 个内置模块！当我们执行 import { debounce } from 'lodash-es' 时，浏览器同时发出 600 多个 HTTP 请求！尽管服务器在处理这些请求时没有问题，但大量的请求会在浏览器端造成网络拥塞，导致页面的加载速度相当慢。
+
+  通过预构建 lodash-es 成为一个模块，我们就只需要一个 HTTP 请求了！
+
+3. 自动依赖搜寻
+
+   如果没有找到存在的缓存，Vite 将抓取你的源码，并自动发现依赖项导入（即 "裸引入"，期望从 node_modules 解析），并使用这些发现的导入作为预构建包的入口点。预绑定是用 esbuild 执行的，所以它通常非常快。
+
+   在服务器已经启动之后，如果在缓存中没有遇到新的依赖项导入，Vite 将重新运行依赖构建进程并重新加载页面。
+
+4. 模块热重载
+
+Vite 提供了一套原生 ESM 的 [HMR API](https://vitejs.cn/guide/api-hmr.html#hot-accept-deps-cb)。 具有 HMR 功能的框架可以利用该 API 提供即时、准确的更新，而无需重新加载页面或删除应用程序状态。Vite 提供了第一优先级的 HMR 集成给 Vue 单文件组件（SFC） 和 React Fast Refresh。也有对 Preact 的集成 @prefresh/vite。
