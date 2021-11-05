@@ -303,7 +303,54 @@ Vite 使用 [esbuild](https://github.com/evanw/esbuild) 将 TypeScript 翻译到
 
 > 注意因为 esbuild 只执行转译工作而不含类型信息，所以它无需支持 TypeScript 的特定功能例如常量枚举和隐式 “type-only” 导入。你必须在你的 tsconfig.json 中的 compilerOptions 里设置 "isolatedModules": true，这样 TS 才会警告你哪些功能无法与独立编译模式一同工作。
 
+vite 可直接导入.ts 文件，在 SFC 中通过`<script lang="ts">`使用
 
+```ts
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+interface Course {
+  id: number;
+  name: string;
+}
+
+export default defineComponent({
+  setup() {
+    const state = ref<Course[]>([]);
+    setTimeout(() => {
+      state.value.push({ id: 1, name: "全栈架构师" });
+    }, 1000);
+  },
+});
+</script>
+```
+
+```json
+// ts版本指定，package.json
+{
+  "devDependencies": {
+    "typescript": "^3.9.7"
+  }
+}
+```
+
+```json
+// ts参考配置, tsconfig.json
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "experimentalDecorators": true,
+    "lib": ["dom", "esnext"]
+  },
+  "exclude": ["node_modules", "dist"]
+}
+```
 
 八、 缓存
 
